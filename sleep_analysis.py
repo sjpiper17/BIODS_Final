@@ -34,6 +34,34 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 
 #-------------------------------------------------------------------------------------------------------------------------------------
 
+#Define functions
+
+#Define a function to calculate the basic statistics of a dataset. 'Data' argument should be a single column of a dataframe or a list
+#and contain the data for which you want the statistics. 'Label' argument contains the label you want to be printed with the 
+#statistics.
+def basic_stats(data, label, decimals):
+    #find mean
+    mean = data.mean()
+    print('mean', label, '=', round(mean, decimals), 'hours')
+
+    #find median
+    median = data.median()
+    print('median', label, '=', round(median, decimals), 'hours')
+
+    #find std
+    std = data.std()
+    print('standard deviation', label, '=', round(std, decimals), 'hours')
+
+    #find min
+    min = data.min()
+    print('minimum', label, '=', round(min, decimals), 'hours')
+
+    #find max
+    max = data.max()
+    print('maximum', label, '=', round(max, decimals), 'hours')
+
+#-------------------------------------------------------------------------------------------------------------------------------------
+
 #create input data
 
 #read in the sleep data
@@ -43,7 +71,17 @@ sleep_data = pd.read_csv(sleep_data)
 
 #read in the activity data
 activity_data = sys.argv[2]
-activity_data = pd.read_csv(activity_data) 
+activity_data = pd.read_csv(activity_data)
+
+#-------------------------------------------------------------------------------------------------------------------------------------
+
+#Set constants
+
+#Number of decimals to round to in reporting statisitics
+decimals = 2
+
+#Which characters of a string to keep in order to isolate the date from time data
+date_string_length = 10
 
 #-------------------------------------------------------------------------------------------------------------------------------------
 
@@ -60,7 +98,6 @@ sleep_hist_data = sleep_data.loc[:, ['start_time_iso','actual_minutes']]
 
 #The start_time_iso column contains the date as the first ten characters in a string in the format: YYYY-MM-DD
 #Keep just the date of the start time string
-date_string_length = 10
 sleep_hist_data['day'] = sleep_hist_data['start_time_iso'].str[:date_string_length]
 
 #On some days there are multiple sleeps. We want the total duration slept on each day.
@@ -69,7 +106,6 @@ sleep_sum_data = sleep_hist_data.groupby('day')['actual_minutes'].sum().reset_in
 
 #Convert the time to hours in a new column and drop the minutes column
 min_in_hour = 60
-decimals = 2
 sleep_sum_data['actual_hours'] = sleep_sum_data['actual_minutes'].div(min_in_hour).round(decimals)
 sleep_sum_data.drop(['actual_minutes'], axis = 1, inplace = True)
 
@@ -85,25 +121,8 @@ plt.ylabel('count')
 plt.xticks(sleep_bins)
 plt.draw()
 
-#find mean
-mean = sleep_sum_data['actual_hours'].mean()
-print('mean daily sleep =', round(mean, decimals), 'hours')
-
-#find median
-median = sleep_sum_data['actual_hours'].median()
-print('median daily sleep =', median, 'hours')
-
-#find std
-std = sleep_sum_data['actual_hours'].std()
-print('standard deviation =', round(std, decimals), 'hours')
-
-#find min
-min = sleep_sum_data['actual_hours'].min()
-print('minimum daily sleep =', min, 'hours')
-
-#find max
-max = sleep_sum_data['actual_hours'].max()
-print('maximum daily sleep =', max, 'hours')
+#Run the basic stats function on the sleep data.
+basic_stats(sleep_sum_data['actual_hours'], 'daily sleep', decimals)
 
 #-------------------------------------------------------------------------------------------------------------------------------------
 
@@ -137,18 +156,23 @@ transport_flights = activity_data.loc[activity_data['speed'] > lower_speed_thres
 upper_speed_threshold = 700
 transport_flights = transport_flights.loc[transport_flights['speed'] < upper_speed_threshold]
 
-#Remove activities in the speed range with durations under 30 minutes
-lower_duration_threshold = 0.5
-transport_flights = transport_flights.loc[transport_flights['Duration'] > lower_duration_threshold]
-
 #Isolate activities with speeds over 100 mph labeled 'transport
 transport_flights = transport_flights.loc[transport_flights['Activity'] == 'transport']
 
-#Add the transport flights to the airplane flights, drop columns besides day and duration, and sort the columns by date
+#Add the transport flights to the airplane flights, drop columns besides day and duration, and sort the columns by date.
 flights = flights.append(transport_flights)
 flights = flights.loc[:, ['day','Duration']]
 flights = flights.sort_values(by = 'day')
-print('Participant 1 took' , len(flights), 'flights')
+
+#Remove flights with durations under 30 minutes
+lower_duration_threshold = 0.5
+flights = flights.loc[flights['Duration'] > lower_duration_threshold]
+
+#Print the total number of flights
+print('participant took' , len(flights), 'flights')
+
+#Run the basic stats function on the flight data.
+basic_stats(flights['Duration'], 'flight duration', decimals)
 
 #plot histogram, average line, and label x axis
 flight_bins = np.arange(0, 15, 1)
@@ -164,32 +188,41 @@ plt.draw()
 
 #-------------------------------------------------------------------------------------------------------------------------------------
 
-# #Section 3: flight's affect on sleep
+#Section 3: flight's affect on sleep
 
-# #create new df of just the dates, drop the duplicates, and change to datetime objects
-# flight_dates = flights['day']
-# flight_dates = flight_dates.to_frame()
-# flight_dates.columns = ['day']
-# flight_dates = flight_dates.drop_duplicates()
-# flight_dates['day'] = flight_dates['day'].astype('datetime64[ns]')
+#Now we know when the participant travelled and when they slept. Let’s put them together. We want to compare the participant's sleep 
+#after travelling to their usual sleep. generate a set of dates within 3 days of flight. That is, if they travelled on 3/23/14, then 
+#you should include 3/23/14, 3/24/14, and 3/25/14 as "after-flight" dates. We will make a histogram, run a t-test, and calculate
+#cohen's d to compare the amount of sleep on a normal night vs an "after-flight" night.
 
-# #For every day in the df, add that day, the day after, and 2 days after to a list
-# all_days = []
-# for day in flight_dates['day']:
-#     a = day
-#     a = a.strftime('%Y-%m-%d')
-#     b = day + timedelta(days = 1)
-#     b = b.strftime('%Y-%m-%d')
-#     c = day + timedelta(days = 2)
-#     c = c.strftime('%Y-%m-%d')
-#     all_days.append(a)
-#     all_days.append(b)
-#     all_days.append(c)
+#Create new dataframe of just the flight dates and drop any duplicates.
+flight_dates = flights['day']
+flight_dates = flight_dates.to_frame()
+flight_dates.columns = ['day']
+flight_dates = flight_dates.drop_duplicates()
 
-# #change list to df and drop duplicates, squeeze into series
-# all_flight_days = pd.DataFrame(all_days, columns = ['all flight days'])
-# all_flight_days = all_flight_days.drop_duplicates()
-# all_flight_days = all_flight_days.squeeze()
+#Convert the values in the dataframe to datetime objects.
+flight_dates['day'] = flight_dates['day'].astype('datetime64[ns]')
+
+#Now we need to make the list of all after-flight days. We will create an empty list. Then, using a for loop, we will go through each
+#day in the flight_dates dataframe and add one and two days using the timedelta function. Each of those days is converted back to a
+#string and added to the list.
+all_flight_days = []
+for day in flight_dates['day']:
+    a = day
+    a = a.strftime('%Y-%m-%d')
+    b = day + timedelta(days = 1)
+    b = b.strftime('%Y-%m-%d')
+    c = day + timedelta(days = 2)
+    c = c.strftime('%Y-%m-%d')
+    all_flight_days.append(a)
+    all_flight_days.append(b)
+    all_flight_days.append(c)
+
+#Change the list to a dataframe and drop duplicates. Then squeeze it into a series.
+all_flight_days = pd.DataFrame(all_flight_days, columns = ['all flight days'])
+all_flight_days = all_flight_days.drop_duplicates()
+all_flight_days = all_flight_days.squeeze()
 
 # #initialize lists
 # flight_sleeps = []
