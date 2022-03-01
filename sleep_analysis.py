@@ -62,7 +62,7 @@ def basic_stats(data, label, decimals):
 
 #-------------------------------------------------------------------------------------------------------------------------------------
 
-#create input data
+#Read in input data from the command line
 
 #read in the sleep data
 sleep_data = sys.argv[1]
@@ -81,7 +81,7 @@ activity_data = pd.read_csv(activity_data)
 decimals = 2
 
 #Which characters of a string to keep in order to isolate the date from time data
-date_string_length = 10
+date_string = 10
 
 #-------------------------------------------------------------------------------------------------------------------------------------
 
@@ -98,7 +98,7 @@ sleep_hist_data = sleep_data.loc[:, ['start_time_iso','actual_minutes']]
 
 #The start_time_iso column contains the date as the first ten characters in a string in the format: YYYY-MM-DD
 #Keep just the date of the start time string
-sleep_hist_data['day'] = sleep_hist_data['start_time_iso'].str[:date_string_length]
+sleep_hist_data['day'] = sleep_hist_data['start_time_iso'].str[:date_string]
 
 #On some days there are multiple sleeps. We want the total duration slept on each day.
 #Use groupby to group the data by date and find the sum for each day of actual minutes of sleep.
@@ -138,7 +138,7 @@ basic_stats(sleep_sum_data['actual_hours'], 'daily sleep', decimals)
 #that any very short duration activities tracked are errors. We get rid of any activities under 30 minutes.
 
 #Keep just the date of the start string
-activity_data['day'] = activity_data['Start'].str[:date_string_length]
+activity_data['day'] = activity_data['Start'].str[:date_string]
 
 #The duration of the activity is given in seconds. Convert duration to hours
 seconds_in_hour = 3600
