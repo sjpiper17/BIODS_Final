@@ -6,9 +6,13 @@ The content from this program is inspired by a problem set from the Stanford cla
 
 # Repository Contents
 README.md = A readme file with a brief overview of the program, instructions, dependencies, and information on the program's design.
+
 design_doc.__ = A detailed design document with an overview, background, goals a detailed design, user requirements, potential error states, privacy and security concerns, testing, dependencies, work estimates, and related works.
+
 sleep_analysis.py = The program used to analyze the data, can be run from the command line.
+
 sleep_to_03-31-16.csv = Sleep data for participant one in the related research paper
+
 activities.csv = activity data for participant one in the related research paper
 
 # How to Use
