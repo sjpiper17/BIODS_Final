@@ -4,6 +4,13 @@ This program is being created as part of the Stanford class BIODS 253: Software 
 
 The content from this program is inspired by a problem set from the Stanford class BIOE 217: Translational Bioinformatics. This problem uses data from a digital health paper to analyze airline travel’s affect on sleeping patterns using wearables (Li, X., Dunn, J., Salins, D., Zhou, G., Zhou, W., Rose, S. M. S. F., ... & Sonecha, R. (2017). Digital health: tracking physiomes and activity using wearable biosensors reveals useful health-related information. PLoS biology, 15(1), e2001402). The program consists of reading in wearable data, extracting sleeping events, categorizing them as affected by a flight or not, and then comparing the two groups. The original problem set was for one participant in the study, but by adapting the code from the Jupyter Notebook problem set into a python program, it will be more easily applied to more participants.
 
+# Repository Contents
+README.md = A readme file with a brief overview of the program, instructions, dependencies, and information on the program's design.
+design_doc.__ = A detailed design document with an overview, background, goals a detailed design, user requirements, potential error states, privacy and security concerns, testing, dependencies, work estimates, and related works.
+sleep_analysis.py = The program used to analyze the data, can be run from the command line.
+sleep_to_03-31-16.csv = Sleep data for participant one in the related research paper
+activities.csv = activity data for participant one in the related research paper
+
 # How to Use
 This program can be run from the command line. This program takes two input arguments. The first should be the csv file containing the sleep data from the wearable with columns 'start_time_iso' with GMT date and time of the sleep starting and 'actual_minutes' with sleep duration in minutes. The second should be the csv file containing the activity data from the wearable with columns 'Start' with GMT date and time of activity start, 'Duration' with activity duration in seconds, 'Distance' with distance travelled in miles, and 'Activity' with an activity type label. This program was written on Python 3.
 
