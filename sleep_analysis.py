@@ -10,7 +10,7 @@
 #file containing the activity data. Run 'python3 sleep_analysis.py -h' for more information.
 #-------------------------------------------------------------------------------------------------------------------------------------
 
-#import necessary libraries and functions for the program
+#Import necessary libraries and functions for the program
 
 import sys
 import numpy as np
@@ -18,12 +18,13 @@ from numpy import mean
 from numpy import var
 import pandas as pd
 import matplotlib.pyplot as plt
-import warnings
 import argparse
+import logging
 from datetime import datetime as dt
 from datetime import timedelta
 from scipy import stats
 from math import sqrt
+from IPython.display import display
 
 #-------------------------------------------------------------------------------------------------------------------------------------
 
@@ -36,7 +37,7 @@ parser = argparse.ArgumentParser(description='Analyze wearable data to determine
 
 #Add argument for sleep data input file
 parser.add_argument('--sleep_data_csv', required = True,
-                    help='sleep data from wearable with column \'start_time_iso\' with GMT date and time of sleep starting and \'actual_minutes\' with sleep duration in minutes')
+                    help='sleep data from wearable with columns \'start_time_iso\' with GMT date and time of sleep starting and \'actual_minutes\' with sleep duration in minutes')
 
 #Add argument for activity data input file
 parser.add_argument('--activity_data_csv', required = True,
@@ -68,6 +69,7 @@ def read_data(sleep_data_in, activity_data_in):
 #statistics. 'decimals' is the number of decimals you want answers rounded to.
 
 def basic_stats(data, label, decimals):
+    
     #find mean
     mean = data.mean()
     print('mean', label, '=', round(mean, decimals), 'hours')
@@ -92,14 +94,59 @@ def basic_stats(data, label, decimals):
 
 #Define a function to draw a histogram
 
-def histogram(subplot, data, bins, title, xlabel):
-    hist = subplot.hist(data, bins = bins)
+def histogram(subplot, data, bins, title = '', xlabel = '', alpha = 1, color = 'r', label = ''):
+    
+    #plot histogram
+    hist = subplot.hist(data, bins = bins, alpha = alpha, label = label)
+    
+    #add title, axis labels, and x ticks
     plt.title(title)
-    plt.axvline(data.mean(), color = 'r')
     plt.xlabel(xlabel)
     plt.ylabel('count')
     plt.xticks(bins)
+
+    #add mean line
+    plt.axvline(data.mean(), color = color)
+
+    #silence warning for if no legend is required, add a legend if there are labels
+    logging.getLogger().setLevel(logging.CRITICAL)
+    plt.legend()
+
+    #draw
     plt.draw()
+
+#-------------------------------------------------------------------------------------------------------------------------------------
+
+#Define a function to calculate Cohen's d for independent samples
+
+def cohend(d1, d2):
+
+    #calculate the size of samples
+    n1, n2 = len(d1), len(d2)
+
+    #calculate the variance of the samples
+    s1, s2 = var(d1, ddof=1), var(d2, ddof=1)
+
+    #calculate the pooled standard deviation
+    s = sqrt(((n1 - 1) * s1 + (n2 - 1) * s2) / (n1 + n2 - 2))
+
+    #calculate the means of the samples
+    u1, u2 = mean(d1, axis = 0), mean(d2, axis = 0)
+
+    #calculate the effect size
+    eff_size = pd.to_numeric((u1 - u2) / s)
+    abs_eff_size = abs(eff_size)
+    print('Cohen\'s d =', round(eff_size, decimals))
+
+    #determine magnitude of effect size
+    if abs_eff_size < 0.2:
+        print('Effect size is trivial')
+    elif abs_eff_size >= 0.2 and eff_size < 0.5:
+        print('Effect size is small')
+    elif abs_eff_size >= 0.5 and eff_size < 0.8:
+        print('Effect size is medium')
+    elif abs_eff_size >= 0.8:
+        print('Effect size is large')    
 
 #-------------------------------------------------------------------------------------------------------------------------------------
 
@@ -108,10 +155,13 @@ def histogram(subplot, data, bins, title, xlabel):
 #The data in this study was collected using a Basis Watch. Data from a basis watch includes local start and end times (local_start_time, 
 #local_end_time) as well as timestamps (start_timestamp, end_timestamp) and GMT start and end times (start_time_iso, end_time_iso). 
 #We want to use GMT start time to determine what day the sleep occurs on and actual_minutes to determine sleep duration. Outputs are a
-#histogram of the total number of hours slept each day with a line showing the average, mean, median, standard deviation, and minimum and 
+#histogram of the total number of hours slept each day with a line showing the average, the mean, median, standard deviation, and minimum and 
 #maximum time slept.
 
 def sleep_processing(sleep_data):
+
+    #Make output global
+    global sleep_sum_data
 
     #First, isolate the data we need for the histogram, just the start time and actual minutes
     sleep_hist_data = sleep_data.loc[:, ['start_time_iso','actual_minutes']]
@@ -130,28 +180,31 @@ def sleep_processing(sleep_data):
     sleep_sum_data.drop(['actual_minutes'], axis = 1, inplace = True)
 
     #Create bins and a subplot, then call the histogram function
-    sleep_bins = np.arange(0, 20, 1)
     fig1 = plt.figure()
     ax1 = fig1.add_subplot(1, 1, 1)
     histogram(subplot = ax1, data = sleep_sum_data['actual_hours'], bins = sleep_bins, title = 'Hours Slept Per Day', xlabel = 'hours slept')
 
-    #Run the basic stats function on the sleep data.
+    #Run the basic stats function on the sleep data
     basic_stats(sleep_sum_data['actual_hours'], 'daily sleep', decimals)
 
 #-------------------------------------------------------------------------------------------------------------------------------------
 
 #Section 2: flight duration processing and analysis
 
-#In this section we isolate all of the flights from activities data. Outputs include the total number of flights and a histogram.
+#In this section we isolate all of the flights from activities data. Outputs include the total number of flights, a histogram, and the
+#basic stats.
 
 #As with a lot of wearable data, our labels are imperfect. Some flights are labeled `airplane` in the `Activity` column and others are 
 #labelled `transport`. However, `transport` is also used for car rides, train rides, etc. We will define a flight as an activity that is 
 #either (labeled `airplane`) OR (labeled `transport` AND has an average speed over 100 miles/hour). You can calculate speed from 
 #`Duration` (given in seconds) and `Distance` (given in miles). Additionally, the fastest commercial flights run at around 660 mph. 
 #Therefore, we also filter out activities that are over 700 mph to avoid any measurements that may have been errors. It is also likely
-#that any very short duration activities tracked are errors. We get rid of any activities under 30 minutes.
+#that any very short duration activities tracked are errors. We get rid of any activities that fall in our speed range under 30 minutes.
 
 def activity_processing(activity_data):
+
+    #Make output global
+    global flights
 
     #Keep just the date of the start string
     activity_data['day'] = activity_data['Start'].str[:date_string]
@@ -188,104 +241,75 @@ def activity_processing(activity_data):
     print('participant took' , len(flights), 'flights')
 
     #Create bins and a subplot, then call the histogram function
-    flight_bins = np.arange(0, 15, 1)
     fig2 = plt.figure()
     ax2 = fig2.add_subplot(1, 1, 1)
     histogram(subplot = ax2, data = flights['Duration'], bins = flight_bins, title = 'Flight Durations', xlabel = 'flight duration (hours)')
 
-    #Run the basic stats function on the flight data.
+    #Run the basic stats function on the flight data
     basic_stats(flights['Duration'], 'flight duration', decimals)
 
-# #-------------------------------------------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------------------------------------------------------------
 
-# #Section 3: flight's affect on sleep
+#Section 3: flight's affect on sleep
 
-# #Now we know when the participant travelled and when they slept. Let’s put them together. We want to compare the participant's sleep 
-# #after travelling to their usual sleep. generate a set of dates within 3 days of flight. That is, if they travelled on 3/23/14, then 
-# #you should include 3/23/14, 3/24/14, and 3/25/14 as "after-flight" dates. We will make a histogram, run a t-test, and calculate
-# #cohen's d to compare the amount of sleep on a normal night vs an "after-flight" night.
+#Now we know when the participant travelled and how long they slept each day. Let’s put them together. We want to compare the participant's sleep 
+#after travelling to their usual sleep. Generate a set of dates within 3 days of flight. That is, if they travelled on 3/23/14, then 
+#you should include 3/23/14, 3/24/14, and 3/25/14 as "after-flight" dates. We will make a histogram, run a t-test, and calculate
+#cohen's d to compare the amount of sleep on a normal night vs an "after-flight" night.
 
-# #Create new dataframe of just the flight dates and drop any duplicates.
-# flight_dates = flights['day']
-# flight_dates = flight_dates.to_frame()
-# flight_dates.columns = ['day']
-# flight_dates = flight_dates.drop_duplicates()
+def flight_effect_sleep(flights, sleep_sum_data):
 
-# #Convert the values in the dataframe to datetime objects.
-# flight_dates['day'] = flight_dates['day'].astype('datetime64[ns]')
+    #Create new dataframe of just the flight dates and drop any duplicates.
+    flight_dates = flights['day']
+    flight_dates = flight_dates.to_frame()
+    flight_dates.columns = ['day']
+    flight_dates = flight_dates.drop_duplicates()
 
-# #Now we need to make the list of all after-flight days. We will create an empty list. Then, using a for loop, we will go through each
-# #day in the flight_dates dataframe and add one and two days using the timedelta function. Each of those days is converted back to a
-# #string and added to the list.
-# all_flight_days = []
-# for day in flight_dates['day']:
-#     for offset in range(3):
-#         a = day + timedelta(days = offset)
-#         all_flight_days.append(a.strftime('%Y-%m-%d'))
-#     # a = day
-#     # a = a.strftime('%Y-%m-%d')
-#     # b = day + timedelta(days = 1)
-#     # b = b.strftime('%Y-%m-%d')
-#     # c = day + timedelta(days = 2)
-#     # c = c.strftime('%Y-%m-%d')
-#     # all_flight_days.append(a)
-#     # all_flight_days.append(b)
-#     # all_flight_days.append(c)
+    #Convert the values in the dataframe to datetime objects.
+    flight_dates['day'] = flight_dates['day'].astype('datetime64[ns]')
 
-# #Change the list to a dataframe and drop duplicates. Then squeeze it into a series.
-# all_flight_days = pd.DataFrame(all_flight_days, columns = ['all flight days'])
-# all_flight_days = all_flight_days.drop_duplicates()
-# all_flight_days = all_flight_days.squeeze()
+    #Now we need to make the list of all after-flight days. We will create an empty list. Then, using nested for loops, we will
+    #add the days of and following a flight to the list of after-flight days.
+    all_flight_days = []
+    days_affected_by_flight = 3
+    for day in flight_dates['day']:
+        for offset in range(days_affected_by_flight):
+            a = day + timedelta(days = offset)
+            all_flight_days.append(a.strftime('%Y-%m-%d'))
 
-# # #initialize lists
-# # flight_sleeps = []
-# # non_flight_sleeps = []
+    #Change the list to a dataframe and drop duplicates. Then squeeze it into a series.
+    all_flight_days = pd.DataFrame(all_flight_days, columns = ['all flight days'])
+    all_flight_days = all_flight_days.drop_duplicates()
+    all_flight_days = all_flight_days.squeeze()
 
-# # #go through each row in the sleep data
-# # for i, r in sleep_sum_data.iterrows():
-# #     #if the date from the sleep data is one affected by a flight, add sleep duration
-# #     #to corresponding list
-# #     if r['day'] in all_flight_days.unique():
-# #         flight_sleeps.append(r['actual_hours'])
-# #     #otherwise, add it to the other list
-# #     else:
-# #         non_flight_sleeps.append(r['actual_hours'])
+    #initialize lists
+    flight_sleeps = []
+    non_flight_sleeps = []
 
-# # #convert lists to dfs
-# # flight_sleeps = pd.DataFrame(flight_sleeps, columns = ['sleep_duration'])
-# # non_flight_sleeps = pd.DataFrame(non_flight_sleeps, columns = ['sleep_duration'])
+    #Go through each row in the sleep data. If the date from the sleep data is one affected by a flight, add sleep duration
+    #to corresponding list. Otherwise, add it to the other list.
+    for i, r in sleep_sum_data.iterrows():
+        if r['day'] in all_flight_days.unique():
+            flight_sleeps.append(r['actual_hours'])
+        else:
+            non_flight_sleeps.append(r['actual_hours'])
 
-# # #plot
-# # plt.hist(flight_sleeps, bins = np.arange(0, 20, 1), alpha = 0.5, label = 'flight_sleeps')
-# # plt.hist(non_flight_sleeps, bins = np.arange(0, 20, 1), alpha = 0.5, label = 'non_flight_sleeps')
-# # plt.xlabel('Hours Slept')
-# # plt.ylabel('Count')
-# # plt.legend()
-# # plt.axvline(flight_sleeps.sleep_duration.mean(), color = 'blue')
-# # plt.axvline(non_flight_sleeps.sleep_duration.mean(), color = 'orange')
-# # plt.xticks(np.arange(0, 20, 1))
-# # plt.show()
+    #convert lists to dfs
+    flight_sleeps = pd.DataFrame(flight_sleeps, columns = ['sleep_duration'])
+    non_flight_sleeps = pd.DataFrame(non_flight_sleeps, columns = ['sleep_duration'])
 
-# # #perform ttest
-# # res = stats.ttest_ind(flight_sleeps, non_flight_sleeps)
-# # display(res)
+    #plot both sets of sleep durations on the same histogram
+    fig3 = plt.figure()
+    ax3 = fig3.add_subplot(1, 1, 1)
+    histogram(subplot = ax3, data = flight_sleeps['sleep_duration'], bins = sleep_bins, alpha = 0.5, color = 'blue', label = 'flight sleeps')
+    histogram(subplot = ax3, data = non_flight_sleeps['sleep_duration'], bins = sleep_bins, title = 'Flight VS Non-Flight Sleeps', xlabel = 'hours slept', alpha = 0.5, color = 'orange', label = 'non-flight sleeps')
 
-# # # function to calculate Cohen's d for independent samples
-# # def cohend(d1, d2):
-# #     # calculate the size of samples
-# #     n1, n2 = len(d1), len(d2)
-# #     # calculate the variance of the samples
-# #     s1, s2 = var(d1, ddof=1), var(d2, ddof=1)
-# #     # calculate the pooled standard deviation
-# #     s = sqrt(((n1 - 1) * s1 + (n2 - 1) * s2) / (n1 + n2 - 2))
-# #     # calculate the means of the samples
-# #     u1, u2 = mean(d1), mean(d2)
-# #     # calculate the effect size
-# #     return (u1 - u2) / s
+    #perform ttest
+    res = stats.ttest_ind(flight_sleeps, non_flight_sleeps)
+    display(res)
 
-# # #calculate
-# # d = cohend(flight_sleeps, non_flight_sleeps)
-# # print('Cohen\'s d: %.3f' % d)
+    #calculate cohen's d
+    cohend(flight_sleeps['sleep_duration'], non_flight_sleeps['sleep_duration'])
 
 #-------------------------------------------------------------------------------------------------------------------------------------
 
@@ -297,13 +321,27 @@ decimals = 2
 #Which characters of a string to keep in order to isolate the date from time data
 date_string = 10
 
+#Set bins for sleep duration histograms
+sleep_bins = np.arange(0, 20, 1)
+
+#Set bins for flight duration histogram
+flight_bins = np.arange(0, 15, 1)
+
 #-------------------------------------------------------------------------------------------------------------------------------------
 
 #Call the functions
 
+#Read in the data
 read_data(args.sleep_data_csv, args.activity_data_csv)
+
+#Process the sleep data, get stats, and show histogram
 sleep_processing(sleep_data)
+
+#Process activity data
 activity_processing(activity_data)
+
+#Compare flight-effected sleeps vs non flight-effected sleeps
+flight_effect_sleep(flights, sleep_sum_data)
 
 #Make it so that plots show
 plt.show()
