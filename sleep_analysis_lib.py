@@ -1,4 +1,4 @@
-#This program is meant to analyze airline travel's affect on sleep duration using wearable device data. It 
+#This library is meant to analyze airline travel's affect on sleep duration using wearable device data. It 
 #is being completed as created as part of the Stanford class BIODS 253: Software Engineering for Scientists 
 #by Stanford Bioengineering graduate student Scott Piper (sjpiper@stanford.edu) in Winter quarter 2022.
 #The content from this program is inspired by a problem set from the Stanford class BIOE 217: Translational Bioinformatics.
@@ -6,8 +6,10 @@
 #Digital health: tracking physiomes and activity using wearable biosensors reveals useful health-related information. PLoS biology,
 # 15(1), e2001402
 
-#This program takes two input arguments. The first should be the csv file containing the sleep data. The second should be the csv
-#file containing the activity data. Run 'python3 sleep_analysis.py -h' for more information.
+#This program can be run from the command line interface and takes two input arguments. The first should be the csv file containing
+#the sleep data. The second should be the csv file containing the activity data. Run 'python3 sleep_analysis_cli.py -h' for more 
+#information.
+
 #-------------------------------------------------------------------------------------------------------------------------------------
 
 #Import necessary libraries and functions for the program
@@ -30,23 +32,24 @@ from IPython.display import display
 
 #-------------------------------------------------------------------------------------------------------------------------------------
 
-#Define a function to read in data from the command line
+#Section 0: Define necessary support functions to be used with the main analysis functions in the following sections. These include
+#reading in the data, calculating basic stats, plotting a histogram, and calculating cohen's d.
+
 def read_data(sleep_data_in, activity_data_in):
+    '''Define a function to read in data from the command line. '''
     #make output data variables global to be accessible by subsequent functions
-    global sleep_data
-    global activity_data
+    # global sleep_data
+    # global activity_data
     #read in the sleep data
     sleep_data = pd.read_csv(sleep_data_in)
     #read in the activity data
     activity_data = pd.read_csv(activity_data_in)
     return sleep_data, activity_data
 
-#-------------------------------------------------------------------------------------------------------------------------------------
-
-#Define a function to calculate the basic statistics of a dataset. 'data' argument should be a single column of a dataframe or a list
-#and contain the data for which you want the statistics. 'label' argument contains the label you want to be printed with the 
-#statistics. 'decimals' is the number of decimals you want answers rounded to.
 def basic_stats(data, label, Decimals):
+    '''Define a function to calculate the basic statistics of a dataset. 'data' argument should be a single column of a dataframe or a list
+    and contain the data for which you want the statistics. 'label' argument contains the label you want to be printed with the 
+    statistics. 'decimals' is the number of decimals you want answers rounded to.'''
     #find mean
     my_mean = round(data.mean(), Decimals)
     print('mean', label, '=', my_mean , 'hours')
@@ -64,10 +67,8 @@ def basic_stats(data, label, Decimals):
     print('maximum', label, '=', my_max, 'hours')
     return my_mean, my_median, my_std, my_min, my_max
 
-#-------------------------------------------------------------------------------------------------------------------------------------
-
-#Define a function to draw a histogram
 def histogram(subplot, data, bins, title='', xlabel='', alpha=1, color='r', label=''):
+    '''Define a function to draw a histogram'''
     #plot histogram
     hist = subplot.hist(data, bins=bins, alpha=alpha, label=label)
     #add title, axis labels, and x ticks
@@ -83,10 +84,8 @@ def histogram(subplot, data, bins, title='', xlabel='', alpha=1, color='r', labe
     #draw
     plt.draw()
 
-#-------------------------------------------------------------------------------------------------------------------------------------
-
-#Define a function to calculate Cohen's d for independent samples
 def cohend(d1, d2, Decimals):
+    '''Define a function to calculate Cohen's d for independent samples'''
     #calculate the size of samples
     n1, n2 = len(d1), len(d2)
     #calculate the variance of the samples
@@ -118,14 +117,14 @@ def cohend(d1, d2, Decimals):
 
 #Section 1: sleep duration processing and analysis
 
-'''The data in this study was collected using a Basis Watch. Data from a basis watch includes local start and end times (local_start_time, 
-local_end_time) as well as timestamps (start_timestamp, end_timestamp) and GMT start and end times (start_time_iso, end_time_iso). 
-We want to use GMT start time to determine what day the sleep occurs on and actual_minutes to determine sleep duration. Outputs are a
-histogram of the total number of hours slept each day with a line showing the average, the mean, median, standard deviation, and minimum and 
-maximum time slept.'''
 def sleep_processing(sleep_data, Date_string, Decimals, Sleep_bins):
+    '''The data in this study was collected using a Basis Watch. Data from a basis watch includes local start and end times (local_start_time, 
+    local_end_time) as well as timestamps (start_timestamp, end_timestamp) and GMT start and end times (start_time_iso, end_time_iso). 
+    We want to use GMT start time to determine what day the sleep occurs on and actual_minutes to determine sleep duration. Outputs are a
+    histogram of the total number of hours slept each day with a line showing the average, the mean, median, standard deviation, and minimum and 
+    maximum time slept.'''
     #Make output global
-    global sleep_sum_data
+    # global sleep_sum_data
     #First, isolate the data we need for the histogram, just the start time and actual minutes
     sleep_hist_data = sleep_data.loc[:, ['start_time_iso','actual_minutes']]
     #The start_time_iso column contains the date as the first ten characters in a string in the format: YYYY-MM-DD
@@ -150,18 +149,16 @@ def sleep_processing(sleep_data, Date_string, Decimals, Sleep_bins):
 
 #Section 2: flight duration processing and analysis
 
-#In this section we isolate all of the flights from activities data. Outputs include the total number of flights, a histogram, and the
-#basic stats.
-
-'''As with a lot of wearable data, our labels are imperfect. Some flights are labeled `airplane` in the `Activity` column and others are 
-labelled `transport`. However, `transport` is also used for car rides, train rides, etc. We will define a flight as an activity that is 
-either (labeled `airplane`) OR (labeled `transport` AND has an average speed over 100 miles/hour). You can calculate speed from 
-`Duration` (given in seconds) and `Distance` (given in miles). Additionally, the fastest commercial flights run at around 660 mph. 
-Therefore, we also filter out activities that are over 700 mph to avoid any measurements that may have been errors. It is also likely
-that any very short duration activities tracked are errors. We get rid of any activities that fall in our speed range under 30 minutes.'''
 def activity_processing(activity_data, Date_string, Decimals, Flight_bins):
+    '''In this section we isolate all of the flights from activities data. Outputs include the total number of flights, a histogram, and the
+    basic stats. As with a lot of wearable data, our labels are imperfect. Some flights are labeled `airplane` in the `Activity` column and 
+    others are labelled `transport`. However, `transport` is also used for car rides, train rides, etc. We will define a flight as an activity
+    that is either (labeled `airplane`) OR (labeled `transport` AND has an average speed over 100 miles/hour). You can calculate speed from 
+    `Duration` (given in seconds) and `Distance` (given in miles). Additionally, the fastest commercial flights run at around 660 mph. 
+    Therefore, we also filter out activities that are over 700 mph to avoid any measurements that may have been errors. It is also likely
+    that any very short duration activities tracked are errors. We get rid of any activities that fall in our speed range under 30 minutes.'''
     #Make output global
-    global flights
+    # global flights
     #Keep just the date of the start string
     activity_data['day'] = activity_data['Start'].str[:Date_string]
     #The duration of the activity is given in seconds. Convert duration to hours
@@ -199,11 +196,11 @@ def activity_processing(activity_data, Date_string, Decimals, Flight_bins):
 
 #Section 3: flight's affect on sleep
 
-''' Now we know when the participant travelled and how long they slept each day. Let’s put them together. We want to compare the participant's sleep 
-after travelling to their usual sleep. Generate a set of dates within 3 days of flight. That is, if they travelled on 3/23/14, then 
-you should include 3/23/14, 3/24/14, and 3/25/14 as "after-flight" dates. We will make a histogram, run a t-test, and calculate
-cohen's d to compare the amount of sleep on a normal night vs an "after-flight" night. '''
 def flight_effect_sleep(flights, sleep_sum_data, Decimals, Sleep_bins):
+    ''' Now we know when the participant travelled and how long they slept each day. Let’s put them together. We want to compare the participant's sleep 
+    after travelling to their usual sleep. Generate a set of dates within 3 days of flight. That is, if they travelled on 3/23/14, then 
+    you should include 3/23/14, 3/24/14, and 3/25/14 as "after-flight" dates. We will make a histogram, run a t-test, and calculate
+    cohen's d to compare the amount of sleep on a normal night vs an "after-flight" night. '''
     #Create new dataframe of just the flight dates and drop any duplicates.
     flight_dates = flights['day']
     flight_dates = flight_dates.to_frame()
