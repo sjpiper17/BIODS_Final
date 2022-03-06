@@ -99,6 +99,7 @@ def cohend(d1, d2, Decimals):
     abs_eff_size = abs(eff_size)
     print('Cohen\'s d =', eff_size)
     #determine magnitude of effect size
+    eff_string = ''
     if abs_eff_size < 0.2:
         eff_string = 'Effect size is trivial'
         print(eff_string)
@@ -111,6 +112,7 @@ def cohend(d1, d2, Decimals):
     elif abs_eff_size >= 0.8:
         eff_string = 'Effect size is large'
         print(eff_string)
+    eff_string = eff_string
     return eff_size, eff_string   
 
 #-------------------------------------------------------------------------------------------------------------------------------------
@@ -168,6 +170,7 @@ def activity_processing(activity_data, Date_string, Decimals, Flight_bins):
     flights = activity_data.loc[activity_data['Activity'] == 'airplane']
     #Calculate the speed of all the activities
     activity_data['speed'] = activity_data['Distance'] / activity_data['Duration']
+    speed = activity_data['speed']
     #Isolate activites with speeds over 100 mph and under 700 mph
     lower_speed_threshold = 100
     transport_flights = activity_data.loc[activity_data['speed'] > lower_speed_threshold]
@@ -179,9 +182,10 @@ def activity_processing(activity_data, Date_string, Decimals, Flight_bins):
     flights = pd.concat([flights, transport_flights], axis = 0)
     flights = flights.loc[:, ['day','Duration']]
     flights = flights.sort_values(by = 'day')
-    #Remove flights with durations under 30 minutes
+    #Remove flights with durations under 30 minutes, round duration
     lower_duration_threshold = 0.5
     flights = flights.loc[flights['Duration'] > lower_duration_threshold]
+    flights['Duration'] = flights['Duration'].round(Decimals)
     #Print the total number of flights
     print('participant took' , len(flights), 'flights')
     #Create bins and a subplot, then call the histogram function
@@ -243,6 +247,7 @@ def flight_effect_sleep(flights, sleep_sum_data, Decimals, Sleep_bins):
     display(res)
     #calculate cohen's d
     cohend(flight_sleeps['sleep_duration'], non_flight_sleeps['sleep_duration'], Decimals)
+    return flight_sleeps, non_flight_sleeps
 
 #-------------------------------------------------------------------------------------------------------------------------------------
 
