@@ -14,21 +14,9 @@
 #Import necessary libraries and functions for the program
 
 from sleep_analysis_lib import read_data, sleep_processing, activity_processing, flight_effect_sleep
-from multiprocessing import pool
-from statistics import stdev
-import sys
 import numpy as np
-from numpy import mean
-from numpy import var
-import pandas as pd
 import matplotlib.pyplot as plt
 import argparse
-import logging
-from datetime import datetime as dt
-from datetime import timedelta
-from scipy import stats
-from math import sqrt
-from IPython.display import display
 
 #-------------------------------------------------------------------------------------------------------------------------------------
 

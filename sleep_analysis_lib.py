@@ -14,17 +14,12 @@
 
 #Import necessary libraries and functions for the program
 
-from multiprocessing import pool
 from statistics import stdev
-import sys
-import numpy as np
 from numpy import mean
 from numpy import var
 import pandas as pd
 import matplotlib.pyplot as plt
-import argparse
 import logging
-from datetime import datetime as dt
 from datetime import timedelta
 from scipy import stats
 from math import sqrt
@@ -99,20 +94,15 @@ def cohend(d1, d2, Decimals):
     abs_eff_size = abs(eff_size)
     print('Cohen\'s d =', eff_size)
     #determine magnitude of effect size
-    eff_string = ''
     if abs_eff_size < 0.2:
         eff_string = 'Effect size is trivial'
-        print(eff_string)
     elif abs_eff_size >= 0.2 and eff_size < 0.5:
         eff_string = 'Effect size is small'
-        print(eff_string)
     elif abs_eff_size >= 0.5 and eff_size < 0.8:
         eff_string = 'Effect size is medium'
-        print(eff_string)
     elif abs_eff_size >= 0.8:
         eff_string = 'Effect size is large'
-        print(eff_string)
-    eff_string = eff_string
+    print(eff_string)
     return eff_size, eff_string   
 
 #-------------------------------------------------------------------------------------------------------------------------------------

@@ -13,19 +13,8 @@
 #Import necessary libraries and functions for the program
 
 import unittest
-import sys
 import numpy as np
-from numpy import mean
-from numpy import var
 import pandas as pd
-import matplotlib.pyplot as plt
-import argparse
-import logging
-from datetime import datetime as dt
-from datetime import timedelta
-from scipy import stats
-from math import sqrt
-from IPython.display import display
 
 #-------------------------------------------------------------------------------------------------------------------------------------
 
@@ -45,7 +34,7 @@ Flight_bins = np.arange(0, 15, 1)
 
 #import your functions from the sleep_analysis_lib
 
-from sleep_analysis_lib import basic_stats, cohend, read_data, sleep_processing, activity_processing, flight_effect_sleep
+from sleep_analysis_lib import basic_stats, cohend, sleep_processing, activity_processing, flight_effect_sleep
 
 #-------------------------------------------------------------------------------------------------------------------------------------
 
@@ -124,7 +113,7 @@ class TestSleepAnalysis(unittest.TestCase):
     def test_flight_effect_sleep(self):
         ''''This test make sure dates are categorized correctly'''
         sleep_sum_data = sleep_processing(sleep_data_in, Date_string, Decimals, Sleep_bins)
-        flights = activity_processing(activity_data_in, Date_string, Decimals, Flight_bins)
+        flights = activity_processing(activity_data_in_1, Date_string, Decimals, Flight_bins)
         actual_flight_sleeps, actual_non_flight_sleeps = flight_effect_sleep(flights, sleep_sum_data, Decimals, Sleep_bins)
         actual_flight_sleeps = actual_flight_sleeps['sleep_duration'].tolist() 
         actual_non_flight_sleeps = actual_non_flight_sleeps['sleep_duration'].tolist()
