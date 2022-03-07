@@ -6,15 +6,15 @@
 #Digital health: tracking physiomes and activity using wearable biosensors reveals useful health-related information. PLoS biology,
 # 15(1), e2001402
 
-#This program can be run from the command line interface and takes two input arguments. The first should be the csv file containing
-#the sleep data. The second should be the csv file containing the activity data. Run 'python3 sleep_analysis_cli.py -h' for more 
-#information.
+#This program can be run from the command line interface and takes two input arguments. The first should be the csv file containing 
+#the sleep data. The second should be the csvfile containing the activity data. To run the functions on the provided data, use 
+#'python3 sleep_analysis_cli.py --sleep_data_csv sleep_to_03-31-16.csv --activity_data_csv activities.csv'. Run 
+#'python3 sleep_analysis_cli.py -h' for more information.
 
 #-------------------------------------------------------------------------------------------------------------------------------------
 
 #Import necessary libraries and functions for the program
 
-from statistics import stdev
 from numpy import mean
 from numpy import var
 import pandas as pd
@@ -31,10 +31,7 @@ from IPython.display import display
 #reading in the data, calculating basic stats, plotting a histogram, and calculating cohen's d.
 
 def read_data(sleep_data_in, activity_data_in):
-    '''Define a function to read in data from the command line. '''
-    #make output data variables global to be accessible by subsequent functions
-    # global sleep_data
-    # global activity_data
+    '''Define a function to read in data from the command line. First argument contains sleep data, second one contains activity data. '''
     #read in the sleep data
     sleep_data = pd.read_csv(sleep_data_in)
     #read in the activity data
@@ -44,7 +41,7 @@ def read_data(sleep_data_in, activity_data_in):
 def basic_stats(data, label, Decimals):
     '''Define a function to calculate the basic statistics of a dataset. 'data' argument should be a single column of a dataframe or a list
     and contain the data for which you want the statistics. 'label' argument contains the label you want to be printed with the 
-    statistics. 'decimals' is the number of decimals you want answers rounded to.'''
+    statistics. 'Decimals' is the number of decimals you want answers rounded to.'''
     #find mean
     my_mean = round(data.mean(), Decimals)
     print('mean', label, '=', my_mean , 'hours')
@@ -63,7 +60,7 @@ def basic_stats(data, label, Decimals):
     return my_mean, my_median, my_std, my_min, my_max
 
 def histogram(subplot, data, bins, title='', xlabel='', alpha=1, color='r', label=''):
-    '''Define a function to draw a histogram'''
+    '''Define a function to draw a histogram.'''
     #plot histogram
     hist = subplot.hist(data, bins=bins, alpha=alpha, label=label)
     #add title, axis labels, and x ticks
@@ -115,8 +112,6 @@ def sleep_processing(sleep_data, Date_string, Decimals, Sleep_bins):
     We want to use GMT start time to determine what day the sleep occurs on and actual_minutes to determine sleep duration. Outputs are a
     histogram of the total number of hours slept each day with a line showing the average, the mean, median, standard deviation, and minimum and 
     maximum time slept.'''
-    #Make output global
-    # global sleep_sum_data
     #First, isolate the data we need for the histogram, just the start time and actual minutes
     sleep_hist_data = sleep_data.loc[:, ['start_time_iso','actual_minutes']]
     #The start_time_iso column contains the date as the first ten characters in a string in the format: YYYY-MM-DD
@@ -149,8 +144,6 @@ def activity_processing(activity_data, Date_string, Decimals, Flight_bins):
     `Duration` (given in seconds) and `Distance` (given in miles). Additionally, the fastest commercial flights run at around 660 mph. 
     Therefore, we also filter out activities that are over 700 mph to avoid any measurements that may have been errors. It is also likely
     that any very short duration activities tracked are errors. We get rid of any activities that fall in our speed range under 30 minutes.'''
-    #Make output global
-    # global flights
     #Keep just the date of the start string
     activity_data['day'] = activity_data['Start'].str[:Date_string]
     #The duration of the activity is given in seconds. Convert duration to hours

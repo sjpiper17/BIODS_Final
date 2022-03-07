@@ -6,12 +6,15 @@
 #Digital health: tracking physiomes and activity using wearable biosensors reveals useful health-related information. PLoS biology,
 # 15(1), e2001402
 
-#These unit tests can be run from the command line using python3 tests.py.
+#These unit tests can be run from the command line using 'python3 sleep_analysis_unittests.py'. The unit tests use the test data 
+#found in the files 'sleep_test_data_in.csv', 'sleep_test_data_out.csv', 'activity_test_data_in.csv', 'activity_test_data_out.csv', 
+#and 'flight_effect_test_data_out.csv'. 
 
 #-------------------------------------------------------------------------------------------------------------------------------------
 
 #Import necessary libraries and functions for the program
 
+from sleep_analysis_lib import basic_stats, cohend, sleep_processing, activity_processing, flight_effect_sleep
 import unittest
 import numpy as np
 import pandas as pd
@@ -29,12 +32,6 @@ Sleep_bins = np.arange(0, 20, 1)
 #Set bins for flight duration histogram
 Flight_bins = np.arange(0, 15, 1)
 
-
-#-------------------------------------------------------------------------------------------------------------------------------------
-
-#import your functions from the sleep_analysis_lib
-
-from sleep_analysis_lib import basic_stats, cohend, sleep_processing, activity_processing, flight_effect_sleep
 
 #-------------------------------------------------------------------------------------------------------------------------------------
 
@@ -126,7 +123,7 @@ class TestSleepAnalysis(unittest.TestCase):
 
 #-------------------------------------------------------------------------------------------------------------------------------------
 
-#run the tests
+#Run the tests
 
 if __name__ == '__main__':
     unittest.main()

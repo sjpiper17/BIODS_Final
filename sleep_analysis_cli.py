@@ -6,8 +6,10 @@
 #Digital health: tracking physiomes and activity using wearable biosensors reveals useful health-related information. PLoS biology,
 # 15(1), e2001402
 
-#This program takes two input arguments. The first should be the csv file containing the sleep data. The second should be the csv
-#file containing the activity data. Run 'python3 sleep_analysis_cli.py -h' for more information.
+#This program can be run from the command line interface and takes two input arguments. The first should be the csv file containing 
+#the sleep data. The second should be the csvfile containing the activity data. To run the functions on the provided data, use 
+#'python3 sleep_analysis_cli.py --sleep_data_csv sleep_to_03-31-16.csv --activity_data_csv activities.csv'. Run 
+#'python3 sleep_analysis_cli.py -h' for more information.
 
 #-------------------------------------------------------------------------------------------------------------------------------------
 
