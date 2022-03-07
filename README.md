@@ -7,13 +7,27 @@ The content from this program is inspired by a problem set from the Stanford cla
 # Repository Contents
 README.md = A readme file with a brief overview of the program, instructions, dependencies, and information on the program's design.
 
-design_doc.__ = A detailed design document with an overview, background, goals a detailed design, user requirements, potential error states, privacy and security concerns, testing, dependencies, work estimates, and related works.
+sjpiper_BIODS_253_final_design_doc.__ = A detailed design document with an overview, background, goals a detailed design, user requirements, potential error states, privacy and security concerns, testing, dependencies, work estimates, and related works.
 
-sleep_analysis.py = The program used to analyze the data, can be run from the command line.
+sleep_analysis_lib.py = Contains the functions used to process the data and create outputs
+
+sleep_analysis_cli.py = Contains the argparse functions to create the command line interface used to run the functions with input data
+
+sleep_analysis_unittests.py = Contains the unittests of several functions form the library
 
 sleep_to_03-31-16.csv = Sleep data for participant one in the related research paper
 
-activities.csv = activity data for participant one in the related research paper
+activities.csv = Activity data for participant one in the related research paper
+
+sleep_test_data_in.csv = Contains input data used to test the sleep_processing function
+
+sleep_test_data_out.csv = Contains expected output from running the sleep_processing function with the input test data
+
+activity_test_data_in.csv = Contains input data used to test the activity_processing function
+
+activity_test_data_out.csv = Contains expected output from running the activity_processing function with the input test data
+
+flight_effect_test_data_out.csv = Contains the expected output from running the flight_effect_sleep function with the outputs from sleep_processing and flight_processing using the test data
 
 # How to Use
 This program can be run from the command line. This program takes two input arguments. The first should be the csv file containing the sleep data from the wearable with columns 'start_time_iso' with GMT date and time of the sleep starting and 'actual_minutes' with sleep duration in minutes. The second should be the csv file containing the activity data from the wearable with columns 'Start' with GMT date and time of activity start, 'Duration' with activity duration in seconds, 'Distance' with distance travelled in miles, and 'Activity' with an activity type label. This program was written on Python 3.
@@ -25,8 +39,6 @@ Run 'python3 sleep_analysis.py -h' on the command line for more information.
 # Dependencies
 Third party library and function dependencies include:
 
--Sys
-
 -Numpy 
 
     -Mean
@@ -36,6 +48,8 @@ Third party library and function dependencies include:
 -Pandas 
 
 -Matplotlib.pyplot
+
+-Logging
 
 -Argparse 
 
@@ -54,6 +68,8 @@ Third party library and function dependencies include:
 -Math 
 
     -Sqrt
+
+-Unittest
 
 # Program Design
 The program is broken into a few basic sections for each task necessary to analyze the data. Each section is its own function. The program begins with some brief comments giving an introduction to the program and how to use it. Next, the necessary libraries and functions are imported. After this, the arguments and help statements are generated. Then we define a few functions to read in the input data from the command line, calculate basic statistics, plot a histogram, and calculate Cohen’s d.
