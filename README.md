@@ -71,6 +71,10 @@ Third party library and function dependencies include:
 
 -Unittest
 
+-Os
+
+-Sys
+
 # Program Design
 A library (sleep_analysis_lib.py) was created with the necessary functions to process the wearable data. First, some basic supporting functions are created. These include functions to read the input data, calculate basic statistics, draw a histogram, and calculate Cohen's d. The first main function, sleep_processing, takes the sleep data and determines how many hours of sleep the subject got on each day. A histogram is returned and basic stats are calculated. The second main function takes activity data and determines the date and duration of flights taken by the subject. This is done using activities labeled as ‘airplane’ or those labele 'transport' with speeds between 100 and 700 mph. A histogram and basic stats are created here as well. The third main funciton determines which dates were affected by airline travel and daily sleep is separated into either flight-affected sleep or non flight-affected sleep. A histogram and t-test are delivered to compare the two groups. Additionally, Cohen’s d is found to analyze the effect size of airline travel on sleep.
 
