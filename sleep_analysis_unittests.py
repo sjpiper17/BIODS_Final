@@ -18,6 +18,8 @@ from sleep_analysis_lib import basic_stats, cohend, sleep_processing, activity_p
 import unittest
 import numpy as np
 import pandas as pd
+import os
+import sys
 
 #-------------------------------------------------------------------------------------------------------------------------------------
 
@@ -35,7 +37,7 @@ Flight_bins = np.arange(0, 15, 1)
 
 #-------------------------------------------------------------------------------------------------------------------------------------
 
-#create test data
+#Create / read in test data
 
 #create lists of test data for stats and cohen's functions
 stats_test_data = pd.DataFrame([1, 3, 4, 5, 3, 6, 8, 9, 10, 5, 4, 4, 3])
@@ -56,6 +58,19 @@ flight_efffect_data_out = pd.read_csv('flight_effect_test_data_out.csv')
 
 #-------------------------------------------------------------------------------------------------------------------------------------
 
+#Create a class called HiddenPrints to supress print outputs of functions from the library
+
+class HiddenPrints:
+    def __enter__(self):
+        self._original_stdout = sys.stdout
+        sys.stdout = open(os.devnull, 'w')
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        sys.stdout.close()
+        sys.stdout = self._original_stdout
+
+#-------------------------------------------------------------------------------------------------------------------------------------
+
 #Define the test function class and unit tests
 
 class TestSleepAnalysis(unittest.TestCase):
@@ -70,7 +85,8 @@ class TestSleepAnalysis(unittest.TestCase):
 
     def test_basic_stats(self):
         '''This test determines if the basic_stats function correctly calculates and reports the statistics desired'''
-        my_mean, my_median, my_std, my_min, my_max = basic_stats(stats_test_data, label = 'test', Decimals = Decimals)
+        with HiddenPrints():
+            my_mean, my_median, my_std, my_min, my_max = basic_stats(stats_test_data, label = 'test', Decimals = Decimals)
         actual_stats = [my_mean.iloc[0], my_median.iloc[0], my_std.iloc[0], my_min.iloc[0], my_max.iloc[0]]
         expected_stats = [5, 4, 2.61, 1, 10]
         self.assertEqual(actual_stats, expected_stats)
@@ -78,7 +94,8 @@ class TestSleepAnalysis(unittest.TestCase):
 
     def test_cohens(self):
         '''This test determines that cohen's d is accurately calculated'''
-        eff_size, eff_string = cohend(cohen_test_1, cohen_test_2, Decimals)
+        with HiddenPrints():
+            eff_size, eff_string = cohend(cohen_test_1, cohen_test_2, Decimals)
         actual_effs = [eff_size, eff_string]
         expected_effs = [0.01, 'Effect size is trivial']
         self.assertEqual(actual_effs, expected_effs)
@@ -87,7 +104,8 @@ class TestSleepAnalysis(unittest.TestCase):
     def test_sleep_processing(self):
         '''This test makes sure that dates are parsed correctly, grouped correctly, and that the sume of hours slept per day is calculated
         from minutes correctly'''
-        sleep_sum_data = sleep_processing(sleep_data_in, Date_string, Decimals, Sleep_bins)
+        with HiddenPrints():
+            sleep_sum_data = sleep_processing(sleep_data_in, Date_string, Decimals, Sleep_bins)
         actual_sleep_days = sleep_sum_data['day'].tolist()
         expected_sleep_days = sleep_data_out['day'].tolist()
         actual_sleep_duration = sleep_sum_data['actual_hours'].tolist()
@@ -98,7 +116,8 @@ class TestSleepAnalysis(unittest.TestCase):
 
     def test_activity_processing(self):
         '''This test makes sure that dates are parsed correctly, and activities are filtered correctly'''
-        flights = activity_processing(activity_data_in, Date_string, Decimals, Flight_bins)
+        with HiddenPrints():
+            flights = activity_processing(activity_data_in, Date_string, Decimals, Flight_bins)
         actual_flight_days = flights['day'].tolist()
         expected_flight_days = activity_data_out['day'].tolist()
         actual_flight_duration = flights['Duration'].tolist()
@@ -109,9 +128,10 @@ class TestSleepAnalysis(unittest.TestCase):
 
     def test_flight_effect_sleep(self):
         ''''This test make sure dates are categorized correctly'''
-        sleep_sum_data = sleep_processing(sleep_data_in, Date_string, Decimals, Sleep_bins)
-        flights = activity_processing(activity_data_in_1, Date_string, Decimals, Flight_bins)
-        actual_flight_sleeps, actual_non_flight_sleeps = flight_effect_sleep(flights, sleep_sum_data, Decimals, Sleep_bins)
+        with HiddenPrints():
+            sleep_sum_data = sleep_processing(sleep_data_in, Date_string, Decimals, Sleep_bins)
+            flights = activity_processing(activity_data_in_1, Date_string, Decimals, Flight_bins)
+            actual_flight_sleeps, actual_non_flight_sleeps = flight_effect_sleep(flights, sleep_sum_data, Decimals, Sleep_bins)
         actual_flight_sleeps = actual_flight_sleeps['sleep_duration'].tolist() 
         actual_non_flight_sleeps = actual_non_flight_sleeps['sleep_duration'].tolist()
         expected_flight_sleeps = flight_efffect_data_out['flight_sleeps'].tolist()
