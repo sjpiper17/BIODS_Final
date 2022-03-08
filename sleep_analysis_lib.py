@@ -69,7 +69,7 @@ def histogram(subplot, data, bins, title='', xlabel='', alpha=1, color='r', labe
     plt.ylabel('count')
     plt.xticks(bins)
     #add mean line
-    plt.axvline(data.mean(), color = color)
+    plt.axvline(data.mean(), color=color)
     #silence warning for if no legend is required, add a legend if there are labels
     logging.getLogger().setLevel(logging.CRITICAL)
     plt.legend()
@@ -85,7 +85,7 @@ def cohend(d1, d2, Decimals):
     #calculate the pooled standard deviation
     s = sqrt(((n1 - 1) * s1 + (n2 - 1) * s2) / (n1 + n2 - 2))
     #calculate the means of the samples
-    u1, u2 = mean(d1, axis = 0), mean(d2, axis = 0)
+    u1, u2 = mean(d1, axis=0), mean(d2, axis=0)
     #calculate the effect size
     eff_size = round(pd.to_numeric((u1 - u2) / s), Decimals)
     abs_eff_size = abs(eff_size)
@@ -160,7 +160,7 @@ def activity_processing(activity_data, Date_string, Decimals, Flight_bins):
     #Isolate activities with speeds in the target range labeled 'transport
     transport_flights = transport_flights.loc[transport_flights['Activity'] == 'transport']
     #Add the transport flights to the airplane flights, drop columns besides day and duration, and sort the columns by date.
-    flights = pd.concat([flights, transport_flights], axis = 0)
+    flights = pd.concat([flights, transport_flights], axis=0)
     flights = flights.loc[:, ['day','Duration']]
     flights = flights.sort_values(by = 'day')
     #Remove flights with durations under 30 minutes, round duration

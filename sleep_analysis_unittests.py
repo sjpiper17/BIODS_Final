@@ -34,7 +34,6 @@ Sleep_bins = np.arange(0, 20, 1)
 #Set bins for flight duration histogram
 Flight_bins = np.arange(0, 15, 1)
 
-
 #-------------------------------------------------------------------------------------------------------------------------------------
 
 #Create / read in test data
@@ -127,7 +126,7 @@ class TestSleepAnalysis(unittest.TestCase):
         print('pass activity processing test')
 
     def test_flight_effect_sleep(self):
-        ''''This test make sure dates are categorized correctly'''
+        ''''This test makes sure dates are categorized correctly'''
         with HiddenPrints():
             sleep_sum_data = sleep_processing(sleep_data_in, Date_string, Decimals, Sleep_bins)
             flights = activity_processing(activity_data_in_1, Date_string, Decimals, Flight_bins)
