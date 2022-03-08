@@ -1,5 +1,5 @@
 #This collection of unit tests is meant to test the functions in sleep_analysis_lib.py. It 
-#is being completed as created as part of the Stanford class BIODS 253: Software Engineering for Scientists 
+#is being completed as part of the Stanford class BIODS 253: Software Engineering for Scientists 
 #by Stanford Bioengineering graduate student Scott Piper (sjpiper@stanford.edu) in Winter quarter 2022.
 #The content from this program is inspired by a problem set from the Stanford class BIOE 217: Translational Bioinformatics.
 #Data come from this research paper: Li, X., Dunn, J., Salins, D., Zhou, G., Zhou, W., Rose, S. M. S. F., ... & Sonecha, R. (2017). 

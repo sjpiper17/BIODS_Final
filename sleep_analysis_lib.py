@@ -1,8 +1,8 @@
-#This library is meant to analyze airline travel's affect on sleep duration using wearable device data. It 
-#is being completed as created as part of the Stanford class BIODS 253: Software Engineering for Scientists 
+#This library is meant to analyze airplane travel's effect on sleep duration using wearable device data. It 
+#is being completed as part of the Stanford class BIODS 253: Software Engineering for Scientists 
 #by Stanford Bioengineering graduate student Scott Piper (sjpiper@stanford.edu) in Winter quarter 2022.
 #The content from this program is inspired by a problem set from the Stanford class BIOE 217: Translational Bioinformatics.
-#Data come from this research paper: Li, X., Dunn, J., Salins, D., Zhou, G., Zhou, W., Rose, S. M. S. F., ... & Sonecha, R. (2017). 
+#Data comes from this research paper: Li, X., Dunn, J., Salins, D., Zhou, G., Zhou, W., Rose, S. M. S. F., ... & Sonecha, R. (2017). 
 #Digital health: tracking physiomes and activity using wearable biosensors reveals useful health-related information. PLoS biology,
 # 15(1), e2001402
 
@@ -120,11 +120,10 @@ def sleep_processing(sleep_data, Date_string, Decimals, Sleep_bins):
     #On some days there are multiple sleeps. We want the total duration slept on each day.
     #Use groupby to group the data by date and find the sum for each day of actual minutes of sleep.
     sleep_sum_data = sleep_hist_data.groupby('day')['actual_minutes'].sum().reset_index(name ='actual_minutes')
-    #Convert the time to hours in a new column and drop the minutes column
+    #Convert the time to hours in a new column
     min_in_hour = 60
     sleep_sum_data['actual_hours'] = sleep_sum_data['actual_minutes'].div(min_in_hour).round(Decimals)
-    sleep_sum_data.drop(['actual_minutes'], axis=1, inplace=True)
-    #Create bins and a subplot, then call the histogram function
+    #Create a subplot, then call the histogram function
     fig1 = plt.figure()
     ax1 = fig1.add_subplot(1, 1, 1)
     histogram(subplot=ax1, data=sleep_sum_data['actual_hours'], bins=Sleep_bins, title='Hours Slept Per Day', xlabel='hours slept')
@@ -153,7 +152,6 @@ def activity_processing(activity_data, Date_string, Decimals, Flight_bins):
     flights = activity_data.loc[activity_data['Activity'] == 'airplane']
     #Calculate the speed of all the activities
     activity_data['speed'] = activity_data['Distance'] / activity_data['Duration']
-    speed = activity_data['speed']
     #Isolate activites with speeds over 100 mph and under 700 mph
     lower_speed_threshold = 100
     transport_flights = activity_data.loc[activity_data['speed'] > lower_speed_threshold]
@@ -171,7 +169,7 @@ def activity_processing(activity_data, Date_string, Decimals, Flight_bins):
     flights['Duration'] = flights['Duration'].round(Decimals)
     #Print the total number of flights
     print('participant took' , len(flights), 'flights')
-    #Create bins and a subplot, then call the histogram function
+    #Create a subplot, then call the histogram function
     fig2 = plt.figure()
     ax2 = fig2.add_subplot(1, 1, 1)
     histogram(subplot=ax2, data=flights['Duration'], bins=Flight_bins, title='Flight Durations', xlabel='flight duration (hours)')
