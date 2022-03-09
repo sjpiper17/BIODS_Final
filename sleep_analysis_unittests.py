@@ -89,7 +89,6 @@ class TestSleepAnalysis(unittest.TestCase):
         actual_stats = [my_mean.iloc[0], my_median.iloc[0], my_std.iloc[0], my_min.iloc[0], my_max.iloc[0]]
         expected_stats = [5, 4, 2.61, 1, 10]
         self.assertEqual(actual_stats, expected_stats)
-        print('pass basic stats test')
 
     def test_cohens(self):
         '''This test determines that cohen's d is accurately calculated'''
@@ -98,7 +97,6 @@ class TestSleepAnalysis(unittest.TestCase):
         actual_effs = [eff_size, eff_string]
         expected_effs = [0.01, 'Effect size is trivial']
         self.assertEqual(actual_effs, expected_effs)
-        print('pass cohen\'s d test')
 
     def test_sleep_processing(self):
         '''This test makes sure that dates are parsed correctly, grouped correctly, and that the sume of hours slept per day is calculated
@@ -111,7 +109,6 @@ class TestSleepAnalysis(unittest.TestCase):
         expected_sleep_duration = sleep_data_out['actual_hours'].tolist()
         self.assertEqual(actual_sleep_days, expected_sleep_days)
         self.assertEqual(actual_sleep_duration, expected_sleep_duration)
-        print('pass sleep processing test')
 
     def test_activity_processing(self):
         '''This test makes sure that dates are parsed correctly, and activities are filtered correctly'''
@@ -123,7 +120,6 @@ class TestSleepAnalysis(unittest.TestCase):
         expected_flight_duration = activity_data_out['Duration'].tolist()
         self.assertEqual(actual_flight_days, expected_flight_days)
         self.assertAlmostEqual(actual_flight_duration, expected_flight_duration)
-        print('pass activity processing test')
 
     def test_flight_effect_sleep(self):
         ''''This test makes sure dates are categorized correctly'''
@@ -138,7 +134,6 @@ class TestSleepAnalysis(unittest.TestCase):
         expected_non_flight_sleeps = expected_non_flight_sleeps.tolist()
         self.assertEqual(actual_flight_sleeps, expected_flight_sleeps)
         self.assertEqual(actual_non_flight_sleeps, expected_non_flight_sleeps)
-        print('pass flight effect test')
 
 #-------------------------------------------------------------------------------------------------------------------------------------
 
