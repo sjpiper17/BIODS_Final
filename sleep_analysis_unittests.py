@@ -104,7 +104,7 @@ class TestSleepAnalysis(unittest.TestCase):
         '''This test makes sure that dates are parsed correctly, grouped correctly, and that the sume of hours slept per day is calculated
         from minutes correctly'''
         with HiddenPrints():
-            sleep_sum_data = sleep_processing(sleep_data_in, Date_string, Decimals, Sleep_bins)
+            sleep_sum_data = sleep_processing(sleep_data_in, Date_string, Decimals)
         actual_sleep_days = sleep_sum_data['day'].tolist()
         expected_sleep_days = sleep_data_out['day'].tolist()
         actual_sleep_duration = sleep_sum_data['actual_hours'].tolist()
@@ -116,7 +116,7 @@ class TestSleepAnalysis(unittest.TestCase):
     def test_activity_processing(self):
         '''This test makes sure that dates are parsed correctly, and activities are filtered correctly'''
         with HiddenPrints():
-            flights = activity_processing(activity_data_in, Date_string, Decimals, Flight_bins)
+            flights = activity_processing(activity_data_in, Date_string, Decimals)
         actual_flight_days = flights['day'].tolist()
         expected_flight_days = activity_data_out['day'].tolist()
         actual_flight_duration = flights['Duration'].tolist()
@@ -128,9 +128,9 @@ class TestSleepAnalysis(unittest.TestCase):
     def test_flight_effect_sleep(self):
         ''''This test makes sure dates are categorized correctly'''
         with HiddenPrints():
-            sleep_sum_data = sleep_processing(sleep_data_in, Date_string, Decimals, Sleep_bins)
-            flights = activity_processing(activity_data_in_1, Date_string, Decimals, Flight_bins)
-            actual_flight_sleeps, actual_non_flight_sleeps = flight_effect_sleep(flights, sleep_sum_data, Decimals, Sleep_bins)
+            sleep_sum_data = sleep_processing(sleep_data_in, Date_string, Decimals)
+            flights = activity_processing(activity_data_in_1, Date_string, Decimals)
+            actual_flight_sleeps, actual_non_flight_sleeps = flight_effect_sleep(flights, sleep_sum_data, Decimals)
         actual_flight_sleeps = actual_flight_sleeps['sleep_duration'].tolist() 
         actual_non_flight_sleeps = actual_non_flight_sleeps['sleep_duration'].tolist()
         expected_flight_sleeps = flight_efffect_data_out['flight_sleeps'].tolist()

@@ -15,7 +15,7 @@
 
 #Import necessary libraries and functions for the program
 
-from sleep_analysis_lib import read_data, sleep_processing, activity_processing, flight_effect_sleep
+from sleep_analysis_lib import read_data, sleep_processing, activity_processing, flight_effect_sleep, plot_data
 import numpy as np
 import matplotlib.pyplot as plt
 import argparse
@@ -51,10 +51,10 @@ if __name__ == '__main__':
     #Read in the data
     sleep_data, activity_data = read_data(args.sleep_data_csv, args.activity_data_csv)
     #Process the sleep data, get stats, and show histogram
-    sleep_sum_data = sleep_processing(sleep_data, Date_string, Decimals, Sleep_bins)
+    sleep_sum_data = sleep_processing(sleep_data, Date_string, Decimals)
     #Process activity data
-    flights = activity_processing(activity_data, Date_string, Decimals, Flight_bins)
+    flights = activity_processing(activity_data, Date_string, Decimals)
     #Compare flight-effected sleeps vs non flight-effected sleeps
-    flight_effect_sleep(flights, sleep_sum_data, Decimals, Sleep_bins)
-    #Make it so that plots show
-    plt.show()
+    flight_sleeps, non_flight_sleeps = flight_effect_sleep(flights, sleep_sum_data, Decimals)
+    #Create plots
+    plot_data(sleep_sum_data, flights, flight_sleeps, non_flight_sleeps, Sleep_bins, Flight_bins)

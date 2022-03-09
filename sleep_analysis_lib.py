@@ -31,7 +31,15 @@ from IPython.display import display
 #reading in the data, calculating basic stats, plotting a histogram, and calculating cohen's d.
 
 def read_data(sleep_data_in, activity_data_in):
-    '''Define a function to read in data from the command line. First argument contains sleep data, second one contains activity data. '''
+    '''Reads input data from a csv into python.
+    
+    Arguments:
+    sleep_data_in = a csv file with columns start_time_iso with GMT time and actual_minutes with sleep duration in minutes
+    activity_data_in = a csv file with columns Start with GMT time, Duration with activity duration in seconds, Distance with activity distance in miles, and Activity with activity label
+    
+    Returns:
+    sleep_data = a pandas dataframe of the sleep_data_in csv file
+    activity_data = a pandas dataframe of the activity_data_in csv file'''
     #read in the sleep data
     sleep_data = pd.read_csv(sleep_data_in)
     #read in the activity data
@@ -39,9 +47,20 @@ def read_data(sleep_data_in, activity_data_in):
     return sleep_data, activity_data
 
 def basic_stats(data, label, Decimals):
-    '''Define a function to calculate the basic statistics of a dataset. 'data' argument should be a single column of a dataframe or a list
-    and contain the data for which you want the statistics. 'label' argument contains the label you want to be printed with the 
-    statistics. 'Decimals' is the number of decimals you want answers rounded to.'''
+    '''Calculates the basic statistics of a dataset.
+    
+    Arguments:
+    data = a single column of a dataframe or a list with the data for which you want the statistics
+    label = the label you want to be printed with the statistics, string
+    Decimals = the number of decimals you want answers rounded to, integer
+    
+    Returns:
+    my_mean = the mean of the data
+    my_median = the median of the data
+    my_std = the standard deviation of the data
+    my_min = the minimum of the data
+    my_max = the maximum of the data
+    Prints each stat with a label'''
     #find mean
     my_mean = round(data.mean(), Decimals)
     print('mean', label, '=', my_mean , 'hours')
@@ -60,7 +79,20 @@ def basic_stats(data, label, Decimals):
     return my_mean, my_median, my_std, my_min, my_max
 
 def histogram(subplot, data, bins, title='', xlabel='', alpha=1, color='r', label=''):
-    '''Define a function to draw a histogram.'''
+    '''Draws and annotates a histogram with a line at the mean
+    
+    Arguments:
+    subplot = subplot in which to draw the histogram, a plt.figure subplot
+    data = data to be plotted, a single column of a dataframe
+    bins = bins to be used for plotting the data, a numpy array
+    title = title of the graph, a string
+    xlabel = x axis label, a string
+    alpha = opacity of the histogram, decimal between 0 and 1
+    color = color of the histogram, a string
+    label = label for the legend, a string
+    
+    Returns:
+    draws and displays a histogram'''
     #plot histogram
     hist = subplot.hist(data, bins=bins, alpha=alpha, label=label)
     #add title, axis labels, and x ticks
@@ -77,7 +109,17 @@ def histogram(subplot, data, bins, title='', xlabel='', alpha=1, color='r', labe
     plt.draw()
 
 def cohend(d1, d2, Decimals):
-    '''Define a function to calculate Cohen's d for independent samples'''
+    '''Calculates Cohen's d for independent samples
+    
+    Arguments:
+    d1 = the first sample of data, a signle column of a dataframe or a list
+    d2 = the second sample of data, a single column of a dataframe or a list
+    Decimals = the number of decimals you want answers rounded to, integer
+    
+    Returns:
+    eff_size = cohen's d, the effect size, a number
+    eff_string = if the effect is trvial, small, medium, or large, a string
+    prints out the effect size and a string with how large it is'''
     #calculate the size of samples
     n1, n2 = len(d1), len(d2)
     #calculate the variance of the samples
@@ -106,12 +148,18 @@ def cohend(d1, d2, Decimals):
 
 #Section 1: sleep duration processing and analysis
 
-def sleep_processing(sleep_data, Date_string, Decimals, Sleep_bins):
-    '''The data in this study was collected using a Basis Watch. Data from a basis watch includes local start and end times (local_start_time, 
-    local_end_time) as well as timestamps (start_timestamp, end_timestamp) and GMT start and end times (start_time_iso, end_time_iso). 
-    We want to use GMT start time to determine what day the sleep occurs on and actual_minutes to determine sleep duration. Outputs are a
-    histogram of the total number of hours slept each day with a line showing the average, the mean, median, standard deviation, and minimum and 
-    maximum time slept.'''
+def sleep_processing(sleep_data, Date_string, Decimals):
+    '''The sleep data in this study was collected using a Basis Watch. Data from a basis watch includes GMT start and end times (start_time_iso, end_time_iso). 
+    We want to use GMT start time to determine what day the sleep occurs on and actual_minutes to determine sleep duration. 
+    
+    Arguments:
+    sleep_data = a pandas dataframe with columns start_time_iso with GMT time and actual_minutes with sleep duration in minutes
+    Date_string = the number of characters to keep from the start_time_iso column to keep just the date in the format YYYY-MM-DD
+    Decimals = the number of decimals you want answers rounded to, integer
+
+    Returns:
+    sleep_sum_data = a dataframe with columns day with sleep start date in the format YYYY-MM-DD and actual_hours with sleep duration in hours
+    prints out the basic stats for the sleep data'''
     #First, isolate the data we need for the histogram, just the start time and actual minutes
     sleep_hist_data = sleep_data.loc[:, ['start_time_iso','actual_minutes']]
     #The start_time_iso column contains the date as the first ten characters in a string in the format: YYYY-MM-DD
@@ -123,10 +171,6 @@ def sleep_processing(sleep_data, Date_string, Decimals, Sleep_bins):
     #Convert the time to hours in a new column
     min_in_hour = 60
     sleep_sum_data['actual_hours'] = sleep_sum_data['actual_minutes'].div(min_in_hour).round(Decimals)
-    #Create a subplot, then call the histogram function
-    fig1 = plt.figure()
-    ax1 = fig1.add_subplot(1, 1, 1)
-    histogram(subplot=ax1, data=sleep_sum_data['actual_hours'], bins=Sleep_bins, title='Hours Slept Per Day', xlabel='hours slept')
     #Run the basic stats function on the sleep data
     basic_stats(sleep_sum_data['actual_hours'], 'daily sleep', Decimals)
     return sleep_sum_data
@@ -135,14 +179,23 @@ def sleep_processing(sleep_data, Date_string, Decimals, Sleep_bins):
 
 #Section 2: flight duration processing and analysis
 
-def activity_processing(activity_data, Date_string, Decimals, Flight_bins):
-    '''In this section we isolate all of the flights from activities data. Outputs include the total number of flights, a histogram, and the
-    basic stats. As with a lot of wearable data, our labels are imperfect. Some flights are labeled `airplane` in the `Activity` column and 
-    others are labelled `transport`. However, `transport` is also used for car rides, train rides, etc. We will define a flight as an activity
-    that is either (labeled `airplane`) OR (labeled `transport` AND has an average speed over 100 miles/hour). You can calculate speed from 
-    `Duration` (given in seconds) and `Distance` (given in miles). Additionally, the fastest commercial flights run at around 660 mph. 
-    Therefore, we also filter out activities that are over 700 mph to avoid any measurements that may have been errors. It is also likely
-    that any very short duration activities tracked are errors. We get rid of any activities that fall in our speed range under 30 minutes.'''
+def activity_processing(activity_data, Date_string, Decimals):
+    '''In this function we isolate all of the flights from activities data. As with a lot of wearable data, our labels are imperfect. Some 
+    flights are labeled `airplane` in the `Activity` column and others are labelled `transport`. However, `transport` is also used for car 
+    rides, train rides, etc. We will define a flight as an activity that is either (labeled `airplane`) OR (labeled `transport` AND has an 
+    average speed over 100 miles/hour). You can calculate speed from `Duration` (given in seconds) and `Distance` (given in miles). Additionally, 
+    the fastest commercial flights run at around 660 mph. Therefore, we also filter out activities that are over 700 mph to avoid any measurements 
+    that may have been errors. It is also likely that any very short duration activities tracked are errors. We get rid of any activities that 
+    fall in our speed range under 30 minutes.
+    
+    Arguments:
+    activity_data = a pandas dataframe with columns Start with GMT time, Duration with activity duration in seconds, Distance with activity distance in miles, and Activity with activity label
+    Date_string = the number of characters to keep from the start_time_iso column to keep just the date in the format YYYY-MM-DD
+    Decimals = the number of decimals you want answers rounded to, integer
+    
+    Returns:
+    flights = a dataframe with columns day with flight date in the format YYYY-MM-DD and Duration with fligh duration in hours
+    prints out the number of flights taken and the basic stats for flight duration'''
     #Keep just the date of the start string
     activity_data['day'] = activity_data['Start'].str[:Date_string]
     #The duration of the activity is given in seconds. Convert duration to hours
@@ -169,10 +222,6 @@ def activity_processing(activity_data, Date_string, Decimals, Flight_bins):
     flights['Duration'] = flights['Duration'].round(Decimals)
     #Print the total number of flights
     print('participant took' , len(flights), 'flights')
-    #Create a subplot, then call the histogram function
-    fig2 = plt.figure()
-    ax2 = fig2.add_subplot(1, 1, 1)
-    histogram(subplot=ax2, data=flights['Duration'], bins=Flight_bins, title='Flight Durations', xlabel='flight duration (hours)')
     #Run the basic stats function on the flight data
     basic_stats(flights['Duration'], 'flight duration', Decimals)
     return flights
@@ -181,11 +230,20 @@ def activity_processing(activity_data, Date_string, Decimals, Flight_bins):
 
 #Section 3: flight's affect on sleep
 
-def flight_effect_sleep(flights, sleep_sum_data, Decimals, Sleep_bins):
+def flight_effect_sleep(flights, sleep_sum_data, Decimals):
     ''' Now we know when the participant travelled and how long they slept each day. Let’s put them together. We want to compare the participant's sleep 
     after travelling to their usual sleep. Generate a set of dates within 3 days of flight. That is, if they travelled on 3/23/14, then 
-    you should include 3/23/14, 3/24/14, and 3/25/14 as "after-flight" dates. We will make a histogram, run a t-test, and calculate
-    cohen's d to compare the amount of sleep on a normal night vs an "after-flight" night. '''
+    you should include 3/23/14, 3/24/14, and 3/25/14 as "after-flight" dates.
+    
+    Arguments:
+    flights = a dataframe with columns day with flight date in the format YYYY-MM-DD and Duration with fligh duration in hours
+    sleep_sum_data = a dataframe with columns day with sleep start date in the format YYYY-MM-DD and actual_hours with sleep duration in hours
+    Decimals = the number of decimals you want answers rounded to, integer
+    
+    Returns:
+    flight_sleeps = dataframe with column sleep_duration with sleep duration in hours, contains sleeps affected by airplane travel
+    non_flight_sleeps = dataframe with column sleep_duration with sleep duration in hours, contains sleeps not affected by airplane travel
+    prints results from t test, cohen's d, and a string of how large the effect size is'''
     #Create new dataframe of just the flight dates and drop any duplicates.
     flight_dates = flights['day']
     flight_dates = flight_dates.to_frame()
@@ -218,14 +276,39 @@ def flight_effect_sleep(flights, sleep_sum_data, Decimals, Sleep_bins):
     #convert lists to dfs
     flight_sleeps = pd.DataFrame(flight_sleeps, columns = ['sleep_duration'])
     non_flight_sleeps = pd.DataFrame(non_flight_sleeps, columns = ['sleep_duration'])
-    #plot both sets of sleep durations on the same histogram
-    fig3 = plt.figure()
-    ax3 = fig3.add_subplot(1, 1, 1)
-    histogram(subplot=ax3, data=flight_sleeps['sleep_duration'], bins=Sleep_bins, alpha=0.5, color='blue', label='flight sleeps')
-    histogram(subplot=ax3, data=non_flight_sleeps['sleep_duration'], bins=Sleep_bins, title='Flight VS Non-Flight Sleeps', xlabel='hours slept', alpha=0.5, color='orange', label='non-flight sleeps')
     #perform ttest
     res = stats.ttest_ind(flight_sleeps, non_flight_sleeps)
     display(res)
     #calculate cohen's d
     cohend(flight_sleeps['sleep_duration'], non_flight_sleeps['sleep_duration'], Decimals)
     return flight_sleeps, non_flight_sleeps
+
+#-------------------------------------------------------------------------------------------------------------------------------------
+
+#Section 4: create plots
+
+def plot_data(sleep_sum_data, flights, flight_sleeps, non_flight_sleeps, Sleep_bins, Flight_bins):
+    '''Plots histograms of the sleep data, the flight data, and a comparative histogram of the sleeps affected by airplane flight or not.
+    
+    Arguments:
+    sleep_sum_data = a dataframe with columns day with sleep start date in the format YYYY-MM-DD and actual_hours with sleep duration in hours
+    flights = a dataframe with columns day with flight date in the format YYYY-MM-DD and Duration with fligh duration in hours
+    flight_sleeps = dataframe with column sleep_duration with sleep duration in hours, contains sleeps affected by airplane travel
+    non_flight_sleeps = dataframe with column sleep_duration with sleep duration in hours, contains sleeps not affected by airplane travel
+    Sleep_bins = bins to be used for plotting the sleep data, a numpy array
+    Flight_bins = bins to be used for plotting the  flight data, a numpy array
+
+    Returns:
+    draws and shows three histograms in one figure'''
+    #Create a subplot, then call the histogram function for the sleep data
+    fig1 = plt.figure()
+    ax1 = fig1.add_subplot(1, 3, 1)
+    histogram(subplot=ax1, data=sleep_sum_data['actual_hours'], bins=Sleep_bins, title='Hours Slept Per Day', xlabel='hours slept')
+    #Create a subplot, then call the histogram function for the activity data
+    ax2 = fig1.add_subplot(1, 3, 2)
+    histogram(subplot=ax2, data=flights['Duration'], bins=Flight_bins, title='Flight Durations', xlabel='flight duration (hours)')
+    #Create a subplot, then call the histogram function for botht the flight affected and non flight affected sleep
+    ax3 = fig1.add_subplot(1, 3, 3)
+    histogram(subplot=ax3, data=flight_sleeps['sleep_duration'], bins=Sleep_bins, alpha=0.5, color='blue', label='flight sleeps')
+    histogram(subplot=ax3, data=non_flight_sleeps['sleep_duration'], bins=Sleep_bins, title='Flight VS Non-Flight Sleeps', xlabel='hours slept', alpha=0.5, color='orange', label='non-flight sleeps')
+    plt.show()
