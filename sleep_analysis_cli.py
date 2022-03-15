@@ -15,6 +15,7 @@
 
 #Import necessary libraries and functions for the program
 
+from time import sleep
 from sleep_analysis_lib import read_data, sleep_processing, activity_processing, flight_effect_sleep, plot_data
 import numpy as np
 import matplotlib.pyplot as plt
@@ -25,13 +26,13 @@ import argparse
 #Set constants
 
 #Number of decimals to round to in reporting statisitics
-Decimals = 2
+DECIMALS = 2
 #Which characters of a string to keep in order to isolate the date from time data
-Date_string = 10
+DATE_STRING = 10
 #Set bins for sleep duration histograms
-Sleep_bins = np.arange(0, 20, 1)
+sleep_bins = np.arange(0, 20, 1)
 #Set bins for flight duration histogram
-Flight_bins = np.arange(0, 15, 1)
+flight_bins = np.arange(0, 15, 1)
 
 #-------------------------------------------------------------------------------------------------------------------------------------
 
@@ -51,10 +52,10 @@ if __name__ == '__main__':
     #Read in the data
     sleep_data, activity_data = read_data(args.sleep_data_csv, args.activity_data_csv)
     #Process the sleep data, get stats, and show histogram
-    sleep_sum_data = sleep_processing(sleep_data, Date_string, Decimals)
+    sleep_sum_data = sleep_processing(sleep_data, DATE_STRING, DECIMALS)
     #Process activity data
-    flights = activity_processing(activity_data, Date_string, Decimals)
+    flights = activity_processing(activity_data, DATE_STRING, DECIMALS)
     #Compare flight-effected sleeps vs non flight-effected sleeps
-    flight_sleeps, non_flight_sleeps = flight_effect_sleep(flights, sleep_sum_data, Decimals)
+    flight_sleeps, non_flight_sleeps = flight_effect_sleep(flights, sleep_sum_data, DECIMALS)
     #Create plots
-    plot_data(sleep_sum_data, flights, flight_sleeps, non_flight_sleeps, Sleep_bins, Flight_bins)
+    plot_data(sleep_sum_data, flights, flight_sleeps, non_flight_sleeps, sleep_bins, flight_bins)
