@@ -15,8 +15,7 @@
 
 #Import necessary libraries and functions for the program
 
-from numpy import mean
-from numpy import var
+from numpy import mean, var
 import pandas as pd
 import matplotlib.pyplot as plt
 import logging
