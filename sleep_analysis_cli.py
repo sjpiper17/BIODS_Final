@@ -15,10 +15,8 @@
 
 #Import necessary libraries and functions for the program
 
-from time import sleep
 from sleep_analysis_lib import read_data, sleep_processing, activity_processing, flight_effect_sleep, plot_data
 import numpy as np
-import matplotlib.pyplot as plt
 import argparse
 
 #-------------------------------------------------------------------------------------------------------------------------------------

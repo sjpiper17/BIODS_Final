@@ -17,19 +17,18 @@
 from sleep_analysis_cli import DATE_STRING, DECIMALS
 from sleep_analysis_lib import basic_stats, cohend, sleep_processing, activity_processing, flight_effect_sleep
 import unittest
-import numpy as np
 import pandas as pd
 import os
 import sys
 
 #-------------------------------------------------------------------------------------------------------------------------------------
 
-#Set constants
+# #Set constants
 
-#Number of decimals to round to in reporting statisitics
-DECIMALS = 2
-#Which characters of a string to keep in order to isolate the date from time data
-DATE_STRING = 10
+# #Number of decimals to round to in reporting statisitics
+# DECIMALS = 2
+# #Which characters of a string to keep in order to isolate the date from time data
+# DATE_STRING = 10
 
 #-------------------------------------------------------------------------------------------------------------------------------------
 

@@ -15,7 +15,6 @@
 
 #Import necessary libraries and functions for the program
 
-from unicodedata import decimal
 from numpy import mean
 from numpy import var
 import pandas as pd
