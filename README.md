@@ -29,7 +29,11 @@ activity_test_data_out.csv = Contains expected output from running the activity_
 
 flight_effect_test_data_out.csv = Contains the expected output from running the flight_effect_sleep function with the outputs from sleep_processing and flight_processing using the test data
 
+requirements.txt = text file with all dependencies, must be installed in venv before running scripts
+
 # How to Use
+Before running the program, a virtual environment must be activated. Thic can be done using .\biodsvenv\Scripts\activate in the command line. The libraries in requirements.txt must be installed in this virtual environment before running the program.
+
 This program can be run from the command line. This program takes two input arguments. The first should be the csv file containing the sleep data from the wearable with columns 'start_time_iso' with GMT date and time of the sleep starting and 'actual_minutes' with sleep duration in minutes. The second should be the csv file containing the activity data from the wearable with columns 'Start' with GMT date and time of activity start, 'Duration' with activity duration in seconds, 'Distance' with distance travelled in miles, and 'Activity' with an activity type label. This program was written on Python 3.
 
 An example of how to run the program from the command line would be: python3 sleep_analysis.py --sleep_data_csv sleep.csv --activity_data_csv activities.csv
@@ -37,7 +41,7 @@ An example of how to run the program from the command line would be: python3 sle
 Run 'python3 sleep_analysis.py -h' on the command line for more information.
 
 # Dependencies
-Third party library and function dependencies include:
+The complete list of dependencies and their versions can be found in the requirements.txt file. Third party library and function dependencies include:
 
 -Numpy 
 
